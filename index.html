@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calcolatore Noleggio Operativo – Listino ESG-4%</title>
+<meta name="description" content="Calcolatore di noleggio operativo: canone, totale e preventivo stampabile in PDF.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #F1F4F3;
+  --surface: #FFFFFF;
+  --ink: #16302B;
+  --muted: #5B6B67;
+  --line: #D3DBD8;
+  --primary: #0F4C45;
+  --on-primary: #FFFFFF;
+  --accent: #B36B00;
+  --accent-bg: #FFF1D6;
+  --danger: #A32020;
+  --danger-bg: #FCE9E9;
+  --focus: #1D7FD1;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1917; --surface: #15231F; --ink: #E5EEEB; --muted: #94A7A2; --line: #2A403A;
+    --primary: #4CC2AE; --on-primary: #08201B; --accent: #F0B24A; --accent-bg: #3A2C10;
+    --danger: #FF9C9C; --danger-bg: #3A1B1B; --focus: #6DB6F2;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1917; --surface: #15231F; --ink: #E5EEEB; --muted: #94A7A2; --line: #2A403A;
+  --primary: #4CC2AE; --on-primary: #08201B; --accent: #F0B24A; --accent-bg: #3A2C10;
+  --danger: #FF9C9C; --danger-bg: #3A1B1B; --focus: #6DB6F2;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; }
+
+.app { max-width: 1080px; margin: 0 auto; padding: 28px 20px 48px; }
+.head { margin-bottom: 24px; }
+.head h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(1.6rem, 3.2vw, 2.1rem); line-height: 1.15; margin: 0 0 6px; letter-spacing: -0.01em; }
+.head p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+.card + .card { margin-top: 16px; }
+.card h2 { font-size: 1rem; margin: 0 0 14px; font-weight: 650; }
+.card h2 small { font-weight: 400; color: var(--muted); font-size: .85rem; margin-left: 6px; }
+
+label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 5px; }
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+input[type="text"], input[type="email"], select {
+  width: 100%; font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px; min-height: 44px;
+}
+input:focus-visible, select:focus-visible, button:focus-visible, .seg input:focus-visible + span {
+  outline: 3px solid var(--focus); outline-offset: 2px;
+}
+.amount-wrap { position: relative; }
+.amount-wrap span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.amount-wrap input { padding-left: 30px; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.hint { font-size: .8rem; color: var(--muted); margin-top: 5px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg label { margin: 0; font-weight: 500; cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: block; text-align: center; padding: 10px 8px; min-height: 44px; }
+.seg input:checked + span { background: var(--primary); color: var(--on-primary); font-weight: 650; }
+.seg label + label span { border-left: 1px solid var(--line); }
+
+.chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; }
+.chips label { margin: 0; font-weight: 500; cursor: pointer; position: relative; }
+.chips input { position: absolute; opacity: 0; pointer-events: none; }
+.chips label > span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; min-height: 76px; padding: 8px 6px; text-align: center;
+  border: 1.5px solid var(--line); border-radius: 9px; background: var(--surface); }
+.chips .m { font-family: var(--serif); font-size: 1.35rem; font-weight: 600; line-height: 1.1; }
+.chips .y { font-size: .78rem; color: var(--muted); }
+.chips .p { font-size: .82rem; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 3px; }
+.chips label:hover input:not(:disabled) + span { border-color: var(--primary); }
+.chips input:checked + span { border-color: var(--primary); background: var(--primary); color: var(--on-primary); }
+.chips input:checked + span .y { color: inherit; opacity: .85; }
+.chips input:disabled + span { opacity: .4; cursor: not-allowed; background: transparent; border-style: dashed; }
+.chips input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+.check { display: flex; gap: 8px; align-items: center; font-weight: 500; margin: 12px 0 0; font-size: .875rem; }
+.check input { width: 18px; height: 18px; }
+
+.result { position: sticky; top: 16px; border-left: 5px solid var(--accent); }
+@media (max-width: 860px) { .result { position: static; } }
+.big-label { color: var(--muted); font-size: .9rem; }
+.big { font-family: var(--serif); font-size: clamp(2.4rem, 6vw, 3.2rem); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; margin: 2px 0 2px; }
+.big-sub { color: var(--muted); font-size: .85rem; }
+.big2 { margin-top: 14px; padding: 10px 12px; background: var(--accent-bg); border-radius: 8px; display: none; }
+.big2 .big-label { color: var(--ink); }
+.big2-val { font-family: var(--serif); font-size: clamp(1.6rem, 4vw, 2.1rem); font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+dl.sum { margin: 18px 0 0; }
+dl.sum div { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-top: 1px solid var(--line); }
+dl.sum dt { color: var(--muted); }
+dl.sum dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+dl.sum div.total dd { font-size: 1.1rem; }
+dl.sum div.total { border-top: 2px solid var(--ink); }
+
+.msg { border-radius: 7px; padding: 10px 12px; font-size: .9rem; margin-top: 14px; }
+.msg.err { background: var(--danger-bg); color: var(--danger); }
+.msg.info { background: var(--accent-bg); color: var(--ink); }
+.notes { margin: 16px 0 0; padding: 0; list-style: none; font-size: .82rem; color: var(--muted); }
+.notes li { margin-bottom: 6px; }
+
+.btn-print {
+  display: block; width: 100%; margin-top: 18px; font: inherit; font-weight: 650; font-size: 1.05rem;
+  background: var(--primary); color: var(--on-primary); border: 0; border-radius: 8px; padding: 14px 18px; min-height: 52px; cursor: pointer;
+}
+.btn-print:disabled { opacity: .45; cursor: not-allowed; }
+.btn-print:not(:disabled):hover { filter: brightness(1.08); }
+.print-hint { text-align: center; font-size: .78rem; color: var(--muted); margin-top: 8px; }
+
+/* ---------- Documento di stampa ---------- */
+.doc { display: none; }
+
+@media print {
+  @page { size: A4; margin: 16mm 16mm 18mm; }
+  :root { padding: 0 !important; }
+  html, body { background: #fff !important; color: #111 !important; font-size: 11pt; }
+  .app { display: none !important; }
+  .doc { display: block; font-family: var(--serif); color: #111; }
+  .doc * { color: #111; }
+  .doc .muted { color: #555; }
+  .doc-head { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #111; padding-bottom: 10pt; margin-bottom: 16pt; }
+  .doc-brand { font-size: 20pt; font-weight: 700; letter-spacing: .01em; }
+  .doc-brand small { display: block; font-size: 9.5pt; font-weight: 400; color: #555; letter-spacing: 0; }
+  .doc-meta { text-align: right; font-size: 10pt; line-height: 1.5; }
+  .doc h1 { font-size: 16pt; margin: 0 0 12pt; font-weight: 600; }
+  .doc h3 { font-size: 10pt; margin: 0 0 4pt; font-weight: 700; text-transform: none; color: #555; }
+  .doc-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 18pt; margin-bottom: 16pt; font-size: 10.5pt; }
+  .doc-parties .blank { display: inline-block; min-width: 55%; border-bottom: 1px solid #777; height: 1em; }
+  .doc table { width: 100%; border-collapse: collapse; margin: 6pt 0 12pt; font-size: 10.5pt; }
+  .doc td { padding: 6pt 8pt; border-bottom: 1px solid #bbb; vertical-align: top; }
+  .doc td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .doc tr.key td { font-weight: 700; font-size: 12pt; border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; background: #f3f3f3; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .doc-notes { font-size: 9pt; color: #333; line-height: 1.45; margin: 0 0 20pt; padding-left: 14pt; }
+  .doc-notes li { margin-bottom: 3pt; }
+  .doc-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 30pt; margin-top: 28pt; break-inside: avoid; font-size: 10pt; }
+  .doc-sign .line { border-bottom: 1px solid #111; height: 46pt; margin-bottom: 4pt; }
+  .doc-foot { margin-top: 24pt; padding-top: 6pt; border-top: 1px solid #bbb; font-size: 8.5pt; color: #555; }
+  .doc table, .doc-notes, .doc-parties { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<main class="app">
+  <header class="head">
+    <h1>Calcolatore noleggio operativo</h1>
+    <p>Canone, totale e spese di istruttoria calcolati sul listino ESG-4% (locazione operativa fotovoltaico).</p>
+  </header>
+
+  <div class="grid">
+    <div>
+      <section class="card" aria-labelledby="h-fornitura">
+        <h2 id="h-fornitura">Fornitura</h2>
+        <div class="field">
+          <label for="importo">Importo della fornitura (imponibile)</label>
+          <div class="amount-wrap"><span>€</span><input id="importo" type="text" inputmode="decimal" autocomplete="off" placeholder="es. 45.000"></div>
+          <div class="hint" id="range-hint"></div>
+        </div>
+        <div class="field">
+          <label id="lbl-per">Periodicità del canone</label>
+          <div class="seg" role="radiogroup" aria-labelledby="lbl-per">
+            <label><input type="radio" name="per" value="M" checked><span>Mensile</span></label>
+            <label><input type="radio" name="per" value="T"><span>Trimestrale</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label id="lbl-dur">Durata del noleggio</label>
+          <div class="chips" id="durata" role="radiogroup" aria-labelledby="lbl-dur"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="riacq"> Includi riacquisto a fine noleggio da parte del fornitore</label>
+        <div class="hint" id="riacq-hint">Percentuale sull'imponibile: 6% a 30/36 mesi, 4% a 48 mesi, 3% a 60/72/84 mesi.</div>
+      </section>
+
+      <section class="card" aria-labelledby="h-cliente">
+        <h2 id="h-cliente">Dati per il preventivo <small>facoltativi</small></h2>
+        <div class="field">
+          <label for="ragsoc">Ragione sociale</label>
+          <input id="ragsoc" type="text" autocomplete="organization">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="referente">Referente</label>
+            <input id="referente" type="text" autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" autocomplete="email">
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label for="emittente">Intestazione del preventivo</label>
+          <input id="emittente" type="text" value="Fornitore Srl">
+        </div>
+        <label class="check"><input type="checkbox" id="showtot"> Mostra il totale dei canoni nel preventivo stampato</label>
+      </section>
+    </div>
+
+    <aside class="card result" aria-live="polite" aria-labelledby="h-ris">
+      <h2 id="h-ris" style="margin-bottom:6px">Riepilogo</h2>
+      <div class="big-label" id="big-label">Canone mensile (IVA esclusa)</div>
+      <div class="big" id="big">—</div>
+      <div class="big-sub" id="big-sub">Inserisci l'importo della fornitura</div>
+      <div class="big2" id="big2">
+        <div class="big-label">Spesa mensile</div>
+        <div class="big2-val" id="big2-val">—</div>
+      </div>
+
+      <dl class="sum">
+        <div><dt>Durata totale</dt><dd id="r-durata">—</dd></div>
+        <div><dt>Numero di canoni</dt><dd id="r-n">—</dd></div>
+        <div><dt>Totale dei canoni</dt><dd id="r-tot">—</dd></div>
+        <div id="row-riacq" style="display:none"><dt>Riacquisto a fine noleggio (fornitore)</dt><dd id="r-riacq">—</dd></div>
+        <div><dt>Spese di istruttoria (una tantum)</dt><dd id="r-ist">—</dd></div>
+        <div><dt>Spese incasso canone</dt><dd id="r-inc">—</dd></div>
+        <div class="total"><dt>Totale canoni + istruttoria</dt><dd id="r-gen">—</dd></div>
+      </dl>
+
+      <div id="msg"></div>
+
+      <ul class="notes">
+        <li>Pagamento anticipato. La prima fattura è un pro-rata: 1/30 del canone per i giorni dalla consegna.</li>
+        <li>L'assicurazione non è compresa nel canone: costo annuo pari all'1,85% dell'imponibile iniziale dei beni (il cliente può assicurarsi in proprio).</li>
+        <li>Il listino ESG-4% non indica valore di riscatto né opzioni di fine locazione: non sono calcolati.</li>
+      </ul>
+
+      <button class="btn-print" id="btn-print" type="button" disabled>Stampa Preventivo PDF</button>
+      <div class="print-hint">Nella finestra di stampa scegli «Salva come PDF».</div>
+    </aside>
+  </div>
+</main>
+
+<!-- Documento di stampa (visibile solo in @media print) -->
+<section class="doc" aria-hidden="true">
+  <div class="doc-head">
+    <div class="doc-brand"><span id="d-emittente">Fornitore Srl</span><small>Noleggio operativo</small></div>
+    <div class="doc-meta">
+      <div><strong>Preventivo n.</strong> <span id="d-num"></span></div>
+      <div><strong>Data:</strong> <span id="d-data"></span></div>
+    </div>
+  </div>
+
+  <h1>Preventivo di noleggio operativo</h1>
+
+  <div class="doc-parties">
+    <div>
+      <h3>Cliente</h3>
+      <div><span id="d-ragsoc"></span></div>
+    </div>
+    <div>
+      <h3>Referente</h3>
+      <div><span id="d-ref"></span></div>
+      <div class="muted" style="margin-top:2pt"><span id="d-email"></span></div>
+    </div>
+  </div>
+
+  <table>
+    <tbody>
+      <tr><td>Importo della fornitura (imponibile)</td><td id="d-imp"></td></tr>
+      <tr><td>Durata del noleggio</td><td id="d-dur"></td></tr>
+      <tr><td>Periodicità del canone</td><td id="d-per"></td></tr>
+      <tr class="key"><td id="d-canone-lbl">Canone (IVA esclusa)</td><td id="d-canone"></td></tr>
+      <tr class="key" id="d-mensrow" style="display:none"><td>Spesa mensile</td><td id="d-mens"></td></tr>
+      <tr><td>Numero di canoni</td><td id="d-n"></td></tr>
+      <tr id="d-totrow" style="display:none"><td>Totale dei canoni (IVA esclusa)</td><td id="d-tot"></td></tr>
+      <tr id="d-riacqrow" style="display:none"><td>Riacquisto a fine noleggio, a carico del fornitore</td><td id="d-riacq"></td></tr>
+      <tr><td>Spese di istruttoria (una tantum)</td><td id="d-ist"></td></tr>
+      <tr><td>Spese incasso canone</td><td id="d-inc"></td></tr>
+      <tr class="key" id="d-genrow" style="display:none"><td>Totale canoni + istruttoria</td><td id="d-gen"></td></tr>
+    </tbody>
+  </table>
+
+  <ul class="doc-notes">
+    <li>Pagamento dei canoni anticipato. La prima fattura è un pro-rata, calcolato come 1/30 del canone per i giorni che intercorrono dalla consegna.</li>
+    <li>L'assicurazione non è compresa nel canone: viene fatturata annualmente per un importo pari all'1,85% del costo imponibile iniziale dei beni (circa <span id="d-ass"></span> all'anno). Il cliente può assicurarsi in proprio.</li>
+    <li>Le condizioni di fine locazione non sono comprese nel presente preventivo.</li>
+    <li>Il presente preventivo è indicativo e soggetto ad approvazione.</li>
+  </ul>
+
+  <div class="doc-sign">
+    <div>
+      <div class="line"></div>
+      Luogo e data
+    </div>
+    <div>
+      <div class="line"></div>
+      Per accettazione – timbro e firma del cliente
+    </div>
+  </div>
+
+  <div class="doc-foot">Preventivo n. <span id="d-num2"></span> del <span id="d-data2"></span></div>
+</section>
+
+<script>
+/* ===== Dati estratti dal foglio "ESG-4%" (TABELLA LOCAZIONE OPERATIVA - FOTOVOLTAICO) =====
+   I coefficienti sono espressi in % dell'imponibile per un canone MENSILE.
+   Rata mensile = imponibile * coeff / 100 ; rata trimestrale = imponibile * coeff / 100 * 3.
+   null = combinazione non disponibile nel listino. */
+const TABLES = {
+  M: {
+    label: "Mensile", perMonths: 1, min: 12000,
+    maxes: [20000, 40000, 80000, 120000, 160000, 240000],
+    labels: ["12.000–20.000", "20.000–40.000", "40.001–80.000", "80.001–120.000", "120.001–160.000", "160.001–240.000"],
+    coef: {
+      24: [4.8409662295491085, 4.8301613230654725, 4.819356483810471, 4.808551711958203, 4.79774700768321, 4.776137802566804],
+      30: [3.953275920421792, 3.931681188852144, 3.92088397489501, 3.910086862553637, 3.8992898521273873, 3.877696138223605],
+      36: [3.34699591586624, 3.3254161221589276, 3.3146264361702364, 3.303836891379796, 3.293047488256376, 3.271469108896194],
+      48: [2.610522697295926, 2.5781952265454846, 2.567419868548762, 2.556644744922253, 2.545869856620004, 2.5243207898302575],
+      60: [2.166262453503478, 2.133974708402986, 2.112451258629078, 2.090929195174538, 2.080168687501352, 2.0694085314514092],
+      72: [1.8734987315006864, 1.8412479382729878, 1.8197497458281182, 1.7982534466821332, 1.7875060136753056, 1.7767590619277307],
+      84: [null, null, 1.656561836113875, 1.6458229479788147, 1.6350846619489423, 1.6243469817732614]
+    }
+  },
+  T: {
+    label: "Trimestrale", perMonths: 3, min: 800,
+    maxes: [2000, 7999, 20000, 40000, 80000, 120000, 160000, 240000],
+    labels: ["800–2.000", "2.000–7.999", "8.000–20.000", "20.000–40.000", "40.001–80.000", "80.001–120.000", "120.001–160.000", "160.001–240.000"],
+    coef: {
+      24: [4.651606213626852, 4.631024993817849, 4.610444028142008, 4.600153641014736, 4.589863317914734, 4.579573059007813, 4.5692828644602, 4.548702669111242],
+      30: [3.806158657049638, 3.785591480847588, 3.7650246861159924, 3.74445827509728, 3.734175214185724, 3.723892250051083, 3.713609382978464, 3.693043941165338],
+      36: [3.238997941602242, 3.2184444322021464, 3.1876151579678473, 3.167062973484693, 3.156787082066892, 3.1465113251236154, 3.13623570310131, 3.115684865615423],
+      48: [2.5375299191231164, 2.5170021366983817, 2.4862120926627864, 2.455424025281414, 2.4451617795702494, 2.4348997570688127, 2.424637958685718, 2.4041150379335785],
+      60: [2.114363912849371, 2.093860232496279, 2.063107098574741, 2.032356865145701, 2.011858341551503, 1.9913611382614649, 1.981113035715573, 1.9708652680489613],
+      72: [1.8354849808957618, 1.815003494385338, 1.7842845061911299, 1.7535694650218931, 1.7330949960267792, 1.7126223301734602, 1.7023866796907672, 1.6921514875502197],
+      84: [null, null, null, null, 1.5776779391560714, 1.5674504266464901, 1.5572234875704212, 1.5469971254983441]
+    }
+  }
+};
+const DURATE = [24, 30, 36, 48, 60, 72, 84];
+const MAX_IMPORTO = 240000;
+const SPESE_ISTRUTTORIA = 100;
+const SPESE_INCASSO = 0;
+const ASSICURAZIONE_PCT = 1.85;
+/* Riacquisto a fine noleggio in capo al fornitore, % sull'imponibile, per durata (mesi) */
+const RIACQUISTO_PCT = { 30: 6, 36: 6, 48: 4, 60: 3, 72: 3, 84: 3 };
+
+const $ = id => document.getElementById(id);
+const eur = n => new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(n);
+const r2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+
+function parseImporto(s) {
+  s = (s || "").trim().replace(/\s|€/g, "");
+  if (!s) return NaN;
+  if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+  const v = Number(s);
+  return isFinite(v) ? v : NaN;
+}
+function bracketIndex(table, amount) {
+  return table.maxes.findIndex(m => amount <= m);
+}
+
+let current = null;   // ultimo risultato valido
+let selectedDur = 36;
+
+function getPer() { return document.querySelector('input[name="per"]:checked').value; }
+
+function update() {
+  const per = getPer();
+  const T = TABLES[per];
+  const amount = parseImporto($("importo").value);
+  const hasAmount = !isNaN(amount);
+  let idx = -1, error = "";
+
+  $("range-hint").textContent = "Importo ammesso per canone " + T.label.toLowerCase() + ": da " + eur(T.min) + " a " + eur(MAX_IMPORTO) + ".";
+
+  if (hasAmount) {
+    if (amount < T.min) error = "Importo sotto il minimo del listino (" + eur(T.min) + " per il canone " + T.label.toLowerCase() + ").";
+    else if (amount > MAX_IMPORTO) error = "Importo oltre il massimo del listino (" + eur(MAX_IMPORTO) + ").";
+    else idx = bracketIndex(T, amount);
+  }
+
+  // Selezione durata (pulsanti)
+  const prev = selectedDur;
+  const durOk = d => idx < 0 || T.coef[d][idx] !== null;
+  let notice = "";
+  let dur = prev;
+  if (!durOk(dur)) {
+    const alt = DURATE.filter(durOk).reduce((a, b) => Math.abs(b - prev) < Math.abs(a - prev) ? b : a);
+    notice = "La durata di " + prev + " mesi non è prevista per questo importo: selezionati " + alt + " mesi.";
+    dur = alt;
+  }
+  selectedDur = dur;
+  const box = $("durata");
+  const hadFocus = box.contains(document.activeElement);
+  box.innerHTML = DURATE.map(d => {
+    const avail = durOk(d);
+    const years = d / 12;
+    const yTxt = (Number.isInteger(years) ? years : String(years).replace(".", ",")) + (years === 1 ? " anno" : " anni");
+    let price = "";
+    if (idx >= 0 && avail) price = eur(r2(amount * T.coef[d][idx] / 100 * T.perMonths));
+    else if (idx >= 0) price = "non disponibile";
+    return '<label><input type="radio" name="dur" value="' + d + '"' + (d === dur ? " checked" : "") + (avail ? "" : " disabled") + '>' +
+      '<span><span class="m">' + d + ' mesi</span><span class="y">' + yTxt + '</span>' +
+      (price ? '<span class="p">' + price + '</span>' : "") + '</span></label>';
+  }).join("");
+  if (hadFocus) { const c = box.querySelector("input:checked"); if (c) c.focus(); }
+
+  const ok = idx >= 0;
+  current = null;
+
+  if (ok) {
+    const coef = T.coef[dur][idx];
+    const rata = r2(amount * coef / 100 * T.perMonths);
+    const n = dur / T.perMonths;
+    const tot = r2(rata * n);
+    const gen = r2(tot + SPESE_ISTRUTTORIA + SPESE_INCASSO);
+    const rp = RIACQUISTO_PCT[dur];
+    const riacq = ($("riacq").checked && rp) ? { pct: rp, amount: r2(amount * rp / 100) } : null;
+    current = { per, T, amount, dur, idx, coef, rata, n, tot, gen, riacq };
+    if ($("riacq").checked && !rp) notice += (notice ? " " : "") + "Il riacquisto a fine noleggio non è previsto per la durata di " + dur + " mesi: non incluso.";
+    $("row-riacq").style.display = riacq ? "flex" : "none";
+    if (riacq) $("r-riacq").textContent = eur(riacq.amount) + " (" + String(rp).replace(".", ",") + "%)";
+
+    $("big-label").textContent = "Canone " + T.label.toLowerCase() + " (IVA esclusa)";
+    $("big").textContent = eur(rata);
+    const mens = per === "T" ? r2(rata / 3) : null;
+    current.mens = mens;
+    $("big2").style.display = mens !== null ? "block" : "none";
+    if (mens !== null) $("big2-val").textContent = eur(mens);
+    $("big-sub").textContent = "Scaglione " + T.labels[idx] + " € · coefficiente " + coef.toFixed(4).replace(".", ",") + "%";
+    $("r-durata").textContent = dur + " mesi";
+    $("r-n").textContent = n + (per === "T" ? " canoni trimestrali" : " canoni mensili");
+    $("r-tot").textContent = eur(tot);
+    $("r-ist").textContent = eur(SPESE_ISTRUTTORIA);
+    $("r-inc").textContent = eur(SPESE_INCASSO);
+    $("r-gen").textContent = eur(gen);
+  } else {
+    $("big-label").textContent = "Canone " + T.label.toLowerCase() + " (IVA esclusa)";
+    $("big").textContent = "—";
+    $("big-sub").textContent = hasAmount ? "Correggi l'importo per vedere il canone" : "Inserisci l'importo della fornitura";
+    ["r-durata", "r-n", "r-tot", "r-ist", "r-inc", "r-gen"].forEach(i => $(i).textContent = "—");
+    $("row-riacq").style.display = "none";
+    $("big2").style.display = "none";
+  }
+
+  const msg = $("msg");
+  msg.innerHTML = "";
+  if (error) { msg.className = "msg err"; msg.textContent = error; }
+  else if (notice) { msg.className = "msg info"; msg.textContent = notice; }
+  else msg.className = "";
+
+  $("btn-print").disabled = !current;
+}
+
+/* ===== Preventivo di stampa ===== */
+const today = new Date();
+const pad = n => String(n).padStart(2, "0");
+const quoteNum = "PRV-" + today.getFullYear() + pad(today.getMonth() + 1) + pad(today.getDate()) + "-" + String(Math.floor(100 + Math.random() * 900));
+const dateStr = today.toLocaleDateString("it-IT", { day: "2-digit", month: "long", year: "numeric" });
+
+function fillDoc() {
+  if (!current) return;
+  const c = current;
+  const set = (id, v) => { $(id).textContent = v; };
+  set("d-emittente", $("emittente").value.trim() || "Fornitore Srl");
+  set("d-num", quoteNum); set("d-num2", quoteNum);
+  set("d-data", dateStr); set("d-data2", dateStr);
+
+  const fill = (id, v) => {
+    const el = $(id);
+    el.textContent = v;
+    el.classList.toggle("blank", !v);
+  };
+  fill("d-ragsoc", $("ragsoc").value.trim());
+  fill("d-ref", $("referente").value.trim());
+  set("d-email", $("email").value.trim());
+
+  set("d-imp", eur(c.amount));
+  set("d-dur", c.dur + " mesi");
+  set("d-per", c.T.label + ", anticipata");
+  set("d-canone-lbl", "Canone " + c.T.label.toLowerCase() + " (IVA esclusa)");
+  set("d-canone", eur(c.rata));
+  $("d-mensrow").style.display = c.mens != null ? "table-row" : "none";
+  if (c.mens != null) set("d-mens", eur(c.mens));
+  set("d-n", String(c.n));
+  const showTot = $("showtot").checked;
+  $("d-totrow").style.display = showTot ? "table-row" : "none";
+  $("d-genrow").style.display = showTot ? "table-row" : "none";
+  set("d-tot", eur(c.tot));
+  $("d-riacqrow").style.display = c.riacq ? "table-row" : "none";
+  if (c.riacq) set("d-riacq", eur(c.riacq.amount) + " (" + c.riacq.pct + "%)");
+  set("d-ist", eur(SPESE_ISTRUTTORIA));
+  set("d-inc", eur(SPESE_INCASSO));
+  set("d-gen", eur(c.gen));
+  set("d-ass", eur(r2(c.amount * ASSICURAZIONE_PCT / 100)));
+  document.title = "Preventivo " + quoteNum;
+}
+
+/* ===== Eventi ===== */
+$("importo").addEventListener("input", update);
+$("importo").addEventListener("blur", () => {
+  const v = parseImporto($("importo").value);
+  if (!isNaN(v)) $("importo").value = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 2 }).format(v);
+  update();
+});
+document.querySelectorAll('input[name="per"]').forEach(r => r.addEventListener("change", update));
+$("riacq").addEventListener("change", update);
+$("durata").addEventListener("change", e => { selectedDur = Number(e.target.value); update(); });
+$("btn-print").addEventListener("click", () => { fillDoc(); window.print(); });
+window.addEventListener("beforeprint", fillDoc);
+$("emittente").addEventListener("input", () => {});
+
+update();
+</script>
+</body>
+</html>
