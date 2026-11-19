@@ -162,7 +162,7 @@ dl.sum div.total { border-top: 2px solid var(--ink); }
 <main class="app">
   <header class="head">
     <h1>Calcolatore noleggio operativo</h1>
-    <p>Canone, totale e spese di istruttoria-ESG4 (locazione operativa fotovoltaico).</p>
+    <p>Canone, totale e spese di istruttoria-ESG4.</p>
   </header>
 
   <div class="grid">
@@ -187,6 +187,7 @@ dl.sum div.total { border-top: 2px solid var(--ink); }
         </div>
         <label class="check"><input type="checkbox" id="riacq"> Includi nella stampa il valore di riacquisto a fine noleggio a carico del fornitore</label>
         <div class="hint" id="riacq-hint">Percentuale sull'imponibile: 6% a 30/36 mesi, 4% a 48 mesi, 3% a 60/72/84 mesi.</div>
+        <label class="check"><input type="checkbox" id="assic"> Indica nella nota l'importo annuo dell'assicurazione (1,85% dell'imponibile)</label>
       </section>
 
       <section class="card" aria-labelledby="h-cliente">
@@ -237,8 +238,8 @@ dl.sum div.total { border-top: 2px solid var(--ink); }
 
       <ul class="notes">
         <li>Pagamento anticipato. La prima fattura è un pro-rata: 1/30 del canone per i giorni dalla consegna.</li>
-        <li>L'assicurazione non è compresa nel canone: costo annuo pari all'1,85% dell'imponibile iniziale dei beni (il cliente può assicurarsi in proprio).</li>
-        <li>Il listino ESG-4% non indica valore di riscatto né opzioni di fine locazione: non sono calcolati.</li>
+        <li>L'assicurazione non è compresa nel canone: costo annuo pari all'1,85% dell'imponibile iniziale dei beni<span id="n-ass"></span> (il cliente può assicurarsi in proprio, comunicandolo prima di avviare la richiesta di noleggio operativo).</li>
+        <li>A fine noleggio il fornitore procederà al riacquisto del bene dal noleggiatore; il fornitore sarà libero di rivenderlo al cliente.</li>
       </ul>
 
       <button class="btn-print" id="btn-print" type="button" disabled>Stampa Preventivo PDF</button>
@@ -289,7 +290,7 @@ dl.sum div.total { border-top: 2px solid var(--ink); }
 
   <ul class="doc-notes">
     <li>Pagamento dei canoni anticipato. La prima fattura è un pro-rata, calcolato come 1/30 del canone per i giorni che intercorrono dalla consegna.</li>
-    <li>L'assicurazione non è compresa nel canone: viene fatturata annualmente per un importo pari all'1,85% del costo imponibile iniziale dei beni (circa <span id="d-ass"></span> all'anno). Il cliente può assicurarsi in proprio.</li>
+    <li>L'assicurazione non è compresa nel canone: viene fatturata annualmente per un importo pari all'1,85% del costo imponibile iniziale dei beni<span id="d-ass"></span>. Il cliente può assicurarsi in proprio.</li>
     <li>Le condizioni di fine locazione non sono comprese nel presente preventivo.</li>
     <li>Il presente preventivo è indicativo e soggetto ad approvazione.</li>
   </ul>
@@ -309,7 +310,7 @@ dl.sum div.total { border-top: 2px solid var(--ink); }
 </section>
 
 <script>
-/* ===== Dati estratti dal foglio "ESG-4%" (TABELLA LOCAZIONE OPERATIVA - FOTOVOLTAICO) =====
+/* ===== Coefficienti listino ESG novembre 2026 (TABELLA LOCAZIONE OPERATIVA - ESG) =====
    I coefficienti sono espressi in % dell'imponibile per un canone MENSILE.
    Rata mensile = imponibile * coeff / 100 ; rata trimestrale = imponibile * coeff / 100 * 3.
    null = combinazione non disponibile nel listino. */
@@ -317,35 +318,37 @@ const TABLES = {
   M: {
     label: "Mensile", perMonths: 1, min: 12000,
     maxes: [20000, 40000, 80000, 120000, 160000, 240000],
-    labels: ["12.000–20.000", "20.000–40.000", "40.001–80.000", "80.001–120.000", "120.001–160.000", "160.001–240.000"],
+    labels: ["12.001–20.000", "20.001–40.000", "40.001–80.000", "80.001–120.000", "120.001–160.000", "160.001–240.000"],
     coef: {
-      24: [4.8409662295491085, 4.8301613230654725, 4.819356483810471, 4.808551711958203, 4.79774700768321, 4.776137802566804],
-      30: [3.953275920421792, 3.931681188852144, 3.92088397489501, 3.910086862553637, 3.8992898521273873, 3.877696138223605],
-      36: [3.34699591586624, 3.3254161221589276, 3.3146264361702364, 3.303836891379796, 3.293047488256376, 3.271469108896194],
-      48: [2.610522697295926, 2.5781952265454846, 2.567419868548762, 2.556644744922253, 2.545869856620004, 2.5243207898302575],
-      60: [2.166262453503478, 2.133974708402986, 2.112451258629078, 2.090929195174538, 2.080168687501352, 2.0694085314514092],
-      72: [1.8734987315006864, 1.8412479382729878, 1.8197497458281182, 1.7982534466821332, 1.7875060136753056, 1.7767590619277307],
-      84: [null, null, 1.656561836113875, 1.6458229479788147, 1.6350846619489423, 1.6243469817732614]
+      24: [4.881, 4.87, 4.859, 4.848, 4.838, 4.816],
+      30: [3.995, 3.973, 3.962, 3.952, 3.941, 3.919],
+      36: [3.39, 3.368, 3.357, 3.347, 3.336, 3.314],
+      48: [2.656, 2.623, 2.612, 2.601, 2.591, 2.569],
+      60: [2.213, 2.181, 2.159, 2.137, 2.126, 2.115],
+      72: [1.922, 1.889, 1.868, 1.846, 1.835, 1.824],
+      84: [null, null, 1.706, 1.695, 1.685, 1.674]
     }
   },
   T: {
     label: "Trimestrale", perMonths: 3, min: 800,
-    maxes: [2000, 7999, 20000, 40000, 80000, 120000, 160000, 240000],
-    labels: ["800–2.000", "2.000–7.999", "8.000–20.000", "20.000–40.000", "40.001–80.000", "80.001–120.000", "120.001–160.000", "160.001–240.000"],
+    maxes: [2000, 8000, 20000, 40000, 80000, 120000, 160000, 240000],
+    labels: ["800–2.000", "2.001–8.000", "8.001–20.000", "20.001–40.000", "40.001–80.000", "80.001–120.000", "120.001–160.000", "160.001–240.000"],
     coef: {
-      24: [4.651606213626852, 4.631024993817849, 4.610444028142008, 4.600153641014736, 4.589863317914734, 4.579573059007813, 4.5692828644602, 4.548702669111242],
-      30: [3.806158657049638, 3.785591480847588, 3.7650246861159924, 3.74445827509728, 3.734175214185724, 3.723892250051083, 3.713609382978464, 3.693043941165338],
-      36: [3.238997941602242, 3.2184444322021464, 3.1876151579678473, 3.167062973484693, 3.156787082066892, 3.1465113251236154, 3.13623570310131, 3.115684865615423],
-      48: [2.5375299191231164, 2.5170021366983817, 2.4862120926627864, 2.455424025281414, 2.4451617795702494, 2.4348997570688127, 2.424637958685718, 2.4041150379335785],
-      60: [2.114363912849371, 2.093860232496279, 2.063107098574741, 2.032356865145701, 2.011858341551503, 1.9913611382614649, 1.981113035715573, 1.9708652680489613],
-      72: [1.8354849808957618, 1.815003494385338, 1.7842845061911299, 1.7535694650218931, 1.7330949960267792, 1.7126223301734602, 1.7023866796907672, 1.6921514875502197],
-      84: [null, null, null, null, 1.5776779391560714, 1.5674504266464901, 1.5572234875704212, 1.5469971254983441]
+      24: [4.68961111407935, 4.66899592553256, 4.64838048613798, 4.63807267194697, 4.62776479453207, 4.61745685372148, 4.60714884934279, 4.58653264918939],
+      30: [3.84592922195882, 3.8253008689238, 3.80467213707618, 3.78404302407515, 3.77372832390573, 3.76341352756197, 3.75309863474608, 3.73246855850117],
+      36: [3.28013815051805, 3.25949697861215, 3.22853423401856, 3.20789174112056, 3.19757029433391, 3.18724871336759, 3.176926997753, 3.15628316069403],
+      48: [2.58086468502742, 2.56019945954038, 2.52919998940037, 2.49819853949143, 2.48786427843388, 2.47752979357573, 2.46719508395501, 2.44652498654979],
+      60: [2.15946608660092, 2.13877845005694, 2.1077446003478, 2.07670783781555, 2.05601502256035, 2.03532087946182, 2.02497330572132, 2.01462539489716],
+      72: [1.88216617429907, 1.86145807641157, 1.83039267304345, 1.79932330058185, 1.77860814587852, 1.75789117464971, 1.7475320011077, 1.73717236531545],
+      84: [null, null, null, null, 1.62502158665171, 1.61465518175659, 1.60428819943437, 1.59392063583456]
     }
   }
 };
 const DURATE = [24, 30, 36, 48, 60, 72, 84];
 const MAX_IMPORTO = 240000;
-const SPESE_ISTRUTTORIA = 100;
+/* Spese di istruttoria (listino novembre 2026): 100 € fino a 100.000 € di imponibile, 200 € oltre */
+const SPESE_ISTRUTTORIA_SCAGLIONI = [[100000, 100], [Infinity, 200]];
+const speseIstruttoria = imp => SPESE_ISTRUTTORIA_SCAGLIONI.find(([max]) => imp <= max)[1];
 const SPESE_INCASSO = 0;
 const ASSICURAZIONE_PCT = 1.85;
 /* Riacquisto a fine noleggio in capo al fornitore, % sull'imponibile, per durata (mesi) */
@@ -421,10 +424,11 @@ function update() {
     const rata = r2(amount * coef / 100 * T.perMonths);
     const n = dur / T.perMonths;
     const tot = r2(rata * n);
-    const gen = r2(tot + SPESE_ISTRUTTORIA + SPESE_INCASSO);
+    const ist = speseIstruttoria(amount);
+    const gen = r2(tot + ist + SPESE_INCASSO);
     const rp = RIACQUISTO_PCT[dur];
     const riacq = ($("riacq").checked && rp) ? { pct: rp, amount: r2(amount * rp / 100) } : null;
-    current = { per, T, amount, dur, idx, coef, rata, n, tot, gen, riacq };
+    current = { per, T, amount, dur, idx, coef, rata, n, tot, gen, riacq, ist };
     if ($("riacq").checked && !rp) notice += (notice ? " " : "") + "Il riacquisto a fine noleggio non è previsto per la durata di " + dur + " mesi: non incluso.";
     $("row-riacq").style.display = riacq ? "flex" : "none";
     if (riacq) $("r-riacq").textContent = eur(riacq.amount) + " (" + String(rp).replace(".", ",") + "%)";
@@ -435,11 +439,13 @@ function update() {
     current.mens = mens;
     $("big2").style.display = mens !== null ? "block" : "none";
     if (mens !== null) $("big2-val").textContent = eur(mens);
-    $("big-sub").textContent = "Scaglione " + T.labels[idx] + " € · coefficiente " + coef.toFixed(4).replace(".", ",") + "%";
+    $("big-sub").textContent = "";
     $("r-durata").textContent = dur + " mesi";
     $("r-n").textContent = n + (per === "T" ? " canoni trimestrali" : " canoni mensili");
+    current.ass = r2(amount * ASSICURAZIONE_PCT / 100);
+    $("n-ass").textContent = $("assic").checked ? ", cioè " + eur(current.ass) + " all'anno" : "";
     $("r-tot").textContent = eur(tot);
-    $("r-ist").textContent = eur(SPESE_ISTRUTTORIA);
+    $("r-ist").textContent = eur(ist);
     $("r-inc").textContent = eur(SPESE_INCASSO);
     $("r-gen").textContent = eur(gen);
   } else {
@@ -448,6 +454,7 @@ function update() {
     $("big-sub").textContent = hasAmount ? "Correggi l'importo per vedere il canone" : "Inserisci l'importo della fornitura";
     ["r-durata", "r-n", "r-tot", "r-ist", "r-inc", "r-gen"].forEach(i => $(i).textContent = "—");
     $("row-riacq").style.display = "none";
+    $("n-ass").textContent = "";
     $("big2").style.display = "none";
   }
 
@@ -497,10 +504,10 @@ function fillDoc() {
   set("d-tot", eur(c.tot));
   $("d-riacqrow").style.display = c.riacq ? "table-row" : "none";
   if (c.riacq) set("d-riacq", eur(c.riacq.amount) + " (" + c.riacq.pct + "%)");
-  set("d-ist", eur(SPESE_ISTRUTTORIA));
+  set("d-ist", eur(c.ist));
   set("d-inc", eur(SPESE_INCASSO));
   set("d-gen", eur(c.gen));
-  set("d-ass", eur(r2(c.amount * ASSICURAZIONE_PCT / 100)));
+  set("d-ass", $("assic").checked ? ", cioè " + eur(c.ass) + " all'anno" : "");
   document.title = "Preventivo " + quoteNum;
 }
 
@@ -513,6 +520,7 @@ $("importo").addEventListener("blur", () => {
 });
 document.querySelectorAll('input[name="per"]').forEach(r => r.addEventListener("change", update));
 $("riacq").addEventListener("change", update);
+$("assic").addEventListener("change", update);
 $("durata").addEventListener("change", e => { selectedDur = Number(e.target.value); update(); });
 $("btn-print").addEventListener("click", () => { fillDoc(); window.print(); });
 window.addEventListener("beforeprint", fillDoc);
